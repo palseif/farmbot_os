@@ -5,7 +5,8 @@ defmodule Farmbot.CeleryScript.AST.Node.Sequence do
   import Farmbot.System.ConfigStorage, only: [get_config_value: 3]
   allow_args [:version, :label, :locals, :is_outdated]
 
-  def execute(%{label: name}, body, env) do
+  def execute(%{locals: locals}, body, env) do
+    name = "hackfixme"
     if get_config_value(:bool, "settings", "sequence_init_log") do
       Logger.busy 2, "[#{name}] - Sequence init."
     end
@@ -13,6 +14,10 @@ defmodule Farmbot.CeleryScript.AST.Node.Sequence do
     if Farmbot.BotState.locked? do
       {:error, :locked, env}
     else
+      # push a bunch of new local declerations onto the stack.
+      # find all variable declerations in locals,
+      # 
+      # {:ok, env} = Farmbot.CeleryScript.execute(locals, env)
       do_reduce(body, env, name)
     end
   end
