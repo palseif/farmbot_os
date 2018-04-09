@@ -1,3 +1,5 @@
+# 6.5.0
+
 # 6.4.0
 * Added support for Raspberry Pi 3 B+
 * Update logs to no longer use the `meta` field.
