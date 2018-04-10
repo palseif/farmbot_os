@@ -32,4 +32,12 @@ defmodule Farmbot.CeleryScript.AST.Node.MoveAbsolute do
       Logger.busy 1, "Moving to #{inspect pos}"
     end
   end
+
+  def compile_quoted([x, y, z, speed]) do
+    [%{
+      location: %Farmbot.CeleryScript.AST{kind: Farmbot.CeleryScript.AST.Node.Coordinate, args: %{x: x, y: y, z: z}},
+      speed: speed,
+      offset: %Farmbot.CeleryScript.AST{kind: Farmbot.CeleryScript.AST.Node.Coordinate, args: %{x: 0, y: 0, z: 0}}
+    }, []]
+  end
 end
