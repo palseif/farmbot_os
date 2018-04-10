@@ -25,17 +25,17 @@ defmodule Farmbot.CeleryScript.AST do
   defstruct [:kind, :args, :body, :comment]
 
   @doc "Encode a AST back to a map."
-  def encode(%__MODULE__{kind: mod, args: args, body: body, comment: comment}) do
-    case mod.encode_args(args) do
-      {:ok, encoded_args} ->
-        case encode_body(body) do
-          {:ok, encoded_body} ->
-            {:ok, %{kind: mod_to_kind(mod), args: encoded_args, body: encoded_body, comment: comment}}
-          {:error, _} = err -> err
-        end
-      {:error, _} = err -> err
-    end
-  end
+  # def encode(%__MODULE__{kind: mod, args: args, body: body, comment: comment}) do
+  #   case mod.encode_args(args) do
+  #     {:ok, encoded_args} ->
+  #       case encode_body(body) do
+  #         {:ok, encoded_body} ->
+  #           {:ok, %{kind: kind_to_string(mod), args: encoded_args, body: encoded_body, comment: comment}}
+  #         {:error, _} = err -> err
+  #       end
+  #     {:error, _} = err -> err
+  #   end
+  # end
 
   def encode(thing) do
     {:error, "#{inspect thing} is not an AST node for encoding."}
@@ -84,18 +84,16 @@ defmodule Farmbot.CeleryScript.AST do
   end
 
   def decode(%{kind: kind, args: %{}} = map) do
-    case kind_to_mod(kind) do
-      nil -> {:error, {:unknown_kind, kind}}
-      mod when is_atom(mod) -> do_decode(mod, map)
-    end
+    k = str_to_atom(kind)
+    do_decode(k, %{map | kind: k})
   end
 
-  defp do_decode(mod, %{kind: kind, args: args} = map) do
+  defp do_decode(kind, %{kind: kind, args: args} = map) do
     case decode_body(map[:body] || []) do
       {:ok, body} ->
-        case mod.decode_args(args) do
+        case decode_args(args) do
           {:ok, decoded} ->
-            opts = [kind: mod,
+            opts = [kind: kind,
                     args: decoded,
                     body: body,
                     comment: map[:comment]]
@@ -118,26 +116,29 @@ defmodule Farmbot.CeleryScript.AST do
 
   defp decode_body([], acc), do: {:ok, Enum.reverse(acc)}
 
-  @doc "Lookup a module by it's kind."
-  def kind_to_mod(kind) when is_binary(kind) do
-    mod = [__MODULE__, "Node", Macro.camelize(kind)] |> Module.concat()
-    case Code.ensure_loaded?(mod) do
-      false -> nil
-      true  -> mod
+  # todo make this more readable l o l.
+  defp decode_args(args) when is_map(args) do
+    case Enum.reduce(args, %{}, fn({key, val}, acc) ->
+      if is_map(acc) do
+        if match?(%{kind: _}, val) do
+          case decode(val) do
+            {:ok, more_ast} -> Map.put(acc, key, more_ast)
+            {:error, _} = er -> er
+          end
+        else
+          Map.put(acc, key, val)
+        end
+      else
+        acc
+      end
+    end) do
+      map when is_map(map) -> {:ok, map}
+      {:error, _} = err -> err
     end
   end
 
-  def kind_to_mod(module) when is_atom(module) do
-    module
-  end
-
-  @doc "Change a module back to a kind."
-  def mod_to_kind(module) when is_atom(module) do
-    Module.split(module) |> List.last() |> Macro.underscore()
-  end
-
   defp str_to_atom({key, value}) do
-    k = if is_atom(key), do: key, else: String.to_atom(key)
+    k = str_to_atom(key)
     cond do
       is_map(value)  -> {k, Map.new(value, &str_to_atom(&1))}
       is_list(value) -> {k, Enum.map(value, fn(sub_str_map) -> Map.new(sub_str_map, &str_to_atom(&1)) end)}
@@ -145,6 +146,14 @@ defmodule Farmbot.CeleryScript.AST do
       is_atom(value) -> {k, value}
       is_number(value) -> {k, value}
     end
+  end
+
+  defp str_to_atom(key) when is_binary(key) do
+    String.to_atom(key)
+  end
+
+  defp str_to_atom(key) when is_atom(key) do
+    key
   end
 
 end

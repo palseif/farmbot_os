@@ -3,7 +3,5 @@ defmodule Farmbot.CeleryScript do
   CeleryScript is the scripting language that Farmbot OS understands.
   """
 
-  alias Farmbot.CeleryScript.{
-    
-  }
+  alias Farmbot.CeleryScript
 end

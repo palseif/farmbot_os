@@ -23,9 +23,13 @@ defmodule Farmbot.CeleryScript.Shell.Evaluator do
     receive do
       {:eval, ^server, command, shell_state} ->
         case DSL.compile_string(command) do
-          {:ok, {m, f, a}} -> apply(m, f, a)
-          {:error, reason} -> IO.puts "Error parsing command: #{inspect reason}"
+          :ignore -> :ok
+          {:ok, {m, f, a}} ->
+            apply(m, f, a)
+          {:error, reason} ->
+            IO.puts "Error parsing command: #{inspect reason}"
         end
+        IO.puts "no here"
         new_shell_state = %{shell_state | counter: shell_state.counter + 1}
         send(server, {:evaled, self(), new_shell_state})
         loop(server, state)

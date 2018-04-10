@@ -1,43 +1,17 @@
-defmodule Farmbot.CeleryScript.AST.Heap do
+defmodule Farmbot.CeleryScript.Heap do
   @moduledoc """
-  A heap-ish data structure required when converting canonical CeleryScript AST
+  A heap data structure required when converting canonical CeleryScript AST
   nodes into the Flat IR form.
   This data structure is useful because it addresses each node in the
   CeleryScript tree via a unique numerical index, rather than using mutable
   references.
   MORE INFO: https://github.com/FarmBot-Labs/Celery-Slicer
   """
-  alias Farmbot.CeleryScript.AST
-  alias AST.Heap
-
-  defmodule Address do
-    @moduledoc "Address on the heap."
-
-    defstruct [:value]
-
-    @doc "New heap address."
-    def new(num) when is_integer(num) do
-      %__MODULE__{value: num}
-    end
-
-    @doc "Increment an address."
-    def inc(%__MODULE__{value: num}) do
-      %__MODULE__{value: num + 1}
-    end
-
-    @doc "Decrement an address."
-    def dec(%__MODULE__{value: num}) do
-      %__MODULE__{value: num - 1}
-    end
-
-    defimpl Inspect, for: __MODULE__ do
-      def inspect(%{value: val}, _), do: "HeapAddress(#{val})"
-    end
-  end
+  alias Farmbot.CeleryScript.{Address, Heap}
 
   # Constants and key names.
 
-  @link   "🔗"
+  @link   "__"
   @body   String.to_atom(@link <> "body"  )
   @next   String.to_atom(@link <> "next"  )
   @parent String.to_atom(@link <> "parent")
@@ -47,7 +21,7 @@ defmodule Farmbot.CeleryScript.AST.Heap do
 
   @null Address.new(0)
   @nothing %{
-    @kind => AST.Node.Nothing,
+    @kind => :nothing,
     @parent => @null,
     @body => @null,
     @next => @null

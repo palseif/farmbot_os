@@ -3,9 +3,7 @@ defmodule Farmbot.CeleryScript.AST.Slicer do
   ORIGINAL IMPLEMENTATION HERE: https://github.com/FarmBot-Labs/Celery-Slicer
   Slices a CeleryScript AST into a flat tree.
   """
-  alias Farmbot.CeleryScript.AST
-  alias AST.Heap
-  alias AST.Heap.Address
+  alias Farmbot.CeleryScript.{Address, AST, Heap}
 
   @doc "Run the Slicer on the canonical AST format."
   def run(canonical, heap \\ nil)

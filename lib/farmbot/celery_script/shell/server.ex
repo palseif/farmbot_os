@@ -55,7 +55,7 @@ defmodule Farmbot.CeleryScript.Shell.Server do
   defp wait_input(state, evaluator, evaluator_ref, input) do
     receive do
       {:input, ^input, command} when is_binary(command) ->
-        IO.inspect command
+        IO.puts "got command: #{inspect command}"
         send(evaluator, {:eval, self(), command, state})
         wait_eval(state, evaluator, evaluator_ref)
       {:input, ^input, {:error, :interrupted}} ->

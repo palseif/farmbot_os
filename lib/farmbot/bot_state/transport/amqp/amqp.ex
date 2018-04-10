@@ -228,7 +228,7 @@ defmodule Farmbot.BotState.Transport.AMQP do
         Farmbot.Repo.apply_sync_cmd(cmd)
       end
 
-      {:ok, %Macro.Env{}} = AST.Node.RpcOk.execute(%{label: uuid}, [], struct(Macro.Env))
+      # {:ok, %Macro.Env{}} = AST.Node.RpcOk.execute(%{label: uuid}, [], struct(Macro.Env))
     else
       msg = "Unknown syncable: #{mod}: #{inspect Poison.decode!(payload)}"
       Logger.warn 2, msg
